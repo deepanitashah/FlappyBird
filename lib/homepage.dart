@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:core';
 import 'barriers.dart';
+import 'gameoverscreen.dart';
 import 'package:flappy_bird/bird.dart';
 import 'package:flutter/material.dart';
 
@@ -21,7 +22,7 @@ class _HomePageState extends State<HomePage> {
   static double barrierXone = 1;
   double barrierXtwo = barrierXone + 1.5;
   int score = 0;
-  int highscore =0;
+  int highScore =0;
 
   void jump() {
     setState(() {
@@ -38,6 +39,7 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         birdYaxis = initialHeight - height;
       });
+      // moving barriers
       setState(() {
         if (barrierXone < -2) {
           barrierXone += 3.5;
@@ -52,50 +54,87 @@ class _HomePageState extends State<HomePage> {
           barrierXtwo -= 0.05;
         }
       });
-      if (birdYaxis > 1) {
+      if (birdYaxis > 1 || birdYaxis < -1) {
         timer.cancel();
         gameHasStarted = false;
+        _endGame();
       }
+    });
+
+    
+  }
+
+
+  void _endGame() {
+    // Update high score
+    if (score > highScore) {
+      highScore = score;
+    }
+
+    // Navigate to the Game Over Screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => GameOverScreen(
+          score: score,
+          highScore: highScore,
+          onPlayAgain: _restartGame,
+        ),
+      ),
+    );
+  }
+
+
+  void _restartGame() {
+    setState(() {
+      birdYaxis = 0;
+      time = 0;
+      initialHeight = birdYaxis;
+      barrierXone = 1;
+      barrierXtwo = barrierXone + 1.5;
+      score = 0;
+      gameHasStarted = false;
+      Navigator.of(context).pop(); // Pop the GameOverScreen
     });
   }
 
-  void _showDialog() {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            backgroundColor: Colors.brown,
-            title: Text(
-              "GAME OVER",
-              style: TextStyle(
-                color: Colors.white,
-              ),
-            ),
-            content: Text(
-              "Score: " + score.toString(),
-              style: TextStyle(
-              color: Colors.white),
-            ),
-            actions: [
-              TextButton( 
-                child: Text("PLAY AGAIN",
-                style: TextStyle(
-                  color: Colors.white,
-                ),),
-                onPressed: (){
-                  if(score> highscore){
-                    highscore = score;
-                  }
-                  initState();
-                  setState(() {
-                    Navigator.of(context).pop();
-                  });
-                },
-                )
-            ],
-          );
-        });
-  }
+  // void _showDialog() {
+  //   showDialog(
+  //       context: context,
+  //       builder: (BuildContext context) {
+  //         return AlertDialog(
+  //           backgroundColor: Colors.brown,
+  //           title: Text(
+  //             "GAME OVER",
+  //             style: TextStyle(
+  //               color: Colors.white,
+  //             ),
+  //           ),
+  //           content: Text(
+  //             "Score: " + score.toString(),
+  //             style: TextStyle(
+  //             color: Colors.white),
+  //           ),
+  //           actions: [
+  //             TextButton( 
+  //               child: Text("PLAY AGAIN",
+  //               style: TextStyle(
+  //                 color: Colors.white,
+  //               ),),
+  //               onPressed: (){
+  //                 if(score> highScore){
+  //                   highScore = score;
+  //                 }
+  //                 initState();
+  //                 setState(() {
+  //                   Navigator.of(context).pop();
+  //                 });
+  //               },
+  //               )
+  //           ],
+  //         );
+  //       });
+  // }
 
   @override
   Widget build(BuildContext context) {
